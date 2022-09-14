@@ -12,6 +12,12 @@ public abstract class AppNoLayersTemplateBase : AppTemplateBase
 
     }
 
+    public static bool IsAppNoLayersTemplate(string templateName)
+    {
+        return templateName == AppNoLayersTemplate.TemplateName ||
+               templateName == AppNoLayersProTemplate.TemplateName;
+    }
+
     public override IEnumerable<ProjectBuildPipelineStep> GetCustomSteps(ProjectBuildContext context)
     {
         var steps = new List<ProjectBuildPipelineStep>();
@@ -34,6 +40,8 @@ public abstract class AppNoLayersTemplateBase : AppTemplateBase
                 steps.Add(new ProjectRenameStep("MyCompanyName.MyProjectName.Blazor.Server.Mongo", "MyCompanyName.MyProjectName.Blazor.Server"));
                 break;
         }
+
+        context.Symbols.Add($"dbms:{context.BuildArgs.DatabaseManagementSystem}");
 
         switch (context.BuildArgs.UiFramework)
         {
@@ -70,19 +78,13 @@ public abstract class AppNoLayersTemplateBase : AppTemplateBase
                 break;
         }
 
-        //ConfigureTenantSchema(context, steps);
-        //SwitchDatabaseProvider(context, steps);
-        //DeleteUnrelatedProjects(context, steps);
         steps.Add(new RemoveFolderStep("/aspnet-core/MyCompanyName.MyProjectName/Migrations"));
-        //RemoveMigrations(context, steps);
-        //ConfigureTieredArchitecture(context, steps);
-        //ConfigurePublicWebSite(context, steps);
-        //RemoveUnnecessaryPorts(context, steps);
         RandomizeSslPorts(context, steps);
         RandomizeStringEncryption(context, steps);
         UpdateNuGetConfig(context, steps);
         ChangeConnectionString(context, steps);
-        //CleanupFolderHierarchy(context, steps);
+        ConfigureDockerFiles(context, steps);
+        ConfigureTheme(context, steps);
 
         if (context.BuildArgs.UiFramework != UiFramework.Angular)
         {
@@ -90,5 +92,36 @@ public abstract class AppNoLayersTemplateBase : AppTemplateBase
         }
 
         return steps;
+    }
+
+    protected void ConfigureDockerFiles(ProjectBuildContext context, List<ProjectBuildPipelineStep> steps)
+    {
+        switch (context.BuildArgs.UiFramework)
+        {
+            case UiFramework.None:
+                steps.Add(new RemoveFileStep("/aspnet-core/etc/docker/docker-compose.Blazor.Server.yml"));
+                steps.Add(new RemoveFileStep("/aspnet-core/etc/docker/docker-compose.Mvc.yml"));
+                steps.Add(new RemoveFileStep("/aspnet-core/etc/docker/dynamic-env.json"));
+                steps.Add(new MoveFileStep("/aspnet-core/etc/docker/docker-compose.Host.yml", "/aspnet-core/etc/docker/docker-compose.yml"));
+                break;
+            case UiFramework.Angular:
+                steps.Add(new RemoveFileStep("/aspnet-core/etc/docker/docker-compose.Blazor.Server.yml"));
+                steps.Add(new RemoveFileStep("/aspnet-core/etc/docker/docker-compose.Mvc.yml"));
+                steps.Add(new MoveFileStep("/aspnet-core/etc/docker/docker-compose.Host.yml", "/aspnet-core/etc/docker/docker-compose.yml"));
+                break;
+            case UiFramework.BlazorServer:
+                steps.Add(new RemoveFileStep("/aspnet-core/etc/docker/docker-compose.Host.yml"));
+                steps.Add(new RemoveFileStep("/aspnet-core/etc/docker/docker-compose.Mvc.yml"));
+                steps.Add(new RemoveFileStep("/aspnet-core/etc/docker/dynamic-env.json"));
+                steps.Add(new MoveFileStep("/aspnet-core/etc/docker/docker-compose.Blazor.Server.yml", "/aspnet-core/etc/docker/docker-compose.yml"));
+                break;
+            case UiFramework.NotSpecified:
+            case UiFramework.Mvc:
+                steps.Add(new RemoveFileStep("/aspnet-core/etc/docker/docker-compose.Blazor.Server.yml"));
+                steps.Add(new RemoveFileStep("/aspnet-core/etc/docker/docker-compose.Host.yml"));
+                steps.Add(new RemoveFileStep("/aspnet-core/etc/docker/dynamic-env.json"));
+                steps.Add(new MoveFileStep("/aspnet-core/etc/docker/docker-compose.Mvc.yml", "/aspnet-core/etc/docker/docker-compose.yml"));
+                break;
+        }
     }
 }

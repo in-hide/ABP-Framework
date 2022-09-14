@@ -17,7 +17,7 @@
 
 - [Part 1: 创建服务端](Part-1.md)
 - [Part 2: 图书列表页面](Part-2.md)
-- **Part 3: 创建,更新和删除图书**(本章)
+- **Part 3: 创建,更新和删除图书 (本章)**
 - [Part 4: 集成测试](Part-4.md)
 - [Part 5: 授权](Part-5.md)
 - [Part 6: 作者: 领域层](Part-6.md)
@@ -145,7 +145,7 @@ namespace Acme.BookStore.Web.Pages.Books
         <abp-column size-md="_6">
             <abp-card-title>@L["Books"]</abp-card-title>
         </abp-column>
-        <abp-column size-md="_6" class="text-right">
+        <abp-column size-md="_6" class="text-end">
             <abp-button id="NewBookButton"
                         text="@L["NewBook"].Value"
                         icon="plus"
@@ -175,7 +175,7 @@ namespace Acme.BookStore.Web.Pages.Books
             <abp-column size-md="_6">
                 <abp-card-title>@L["Books"]</abp-card-title>
             </abp-column>
-            <abp-column size-md="_6" class="text-right">
+            <abp-column size-md="_6" class="text-end">
                 <abp-button id="NewBookButton"
                             text="@L["NewBook"].Value"
                             icon="plus"
@@ -688,11 +688,10 @@ export class BookComponent implements OnInit {
     <div class="row">
       <div class="col col-md-6">
         <h5 class="card-title">{%{{{ '::Menu:Books' | abpLocalization }}}%}</h5>
-      </div>
-      <div class="text-right col col-md-6">
-
+      </div>        
+      <div class="text-end col col-md-6">
         <!-- Add the "new book" button here -->
-        <div class="text-lg-right pt-2">
+        <div class="text-lg-end pt-2">
           <button id="create" class="btn btn-primary" type="button" (click)="createBook()">
             <i class="fa fa-plus mr-1"></i>
             <span>{%{{{ "::NewBook" | abpLocalization }}}%}</span>
@@ -1226,7 +1225,7 @@ delete(id: string) {
                             @foreach (int bookTypeValue in Enum.GetValues(typeof(BookType)))
                             {
                                 <SelectItem TValue="BookType" Value="@((BookType) bookTypeValue)">
-                                    @L[$"Enum:BookType:{bookTypeValue}"]
+                                    @L[$"Enum:BookType.{Enum.GetName((BookType)bookTypeValue)}"]
                                 </SelectItem>
                             }
                         </Select>
@@ -1324,7 +1323,7 @@ delete(id: string) {
                             @foreach (int bookTypeValue in Enum.GetValues(typeof(BookType)))
                             {
                                 <SelectItem TValue="BookType" Value="@((BookType) bookTypeValue)">
-                                    @L[$"Enum:BookType:{bookTypeValue}"]
+                                    @L[$"Enum:BookType.{Enum.GetName((BookType)bookTypeValue)}"]
                                 </SelectItem>
                             }
                         </Select>
@@ -1461,7 +1460,7 @@ namespace Acme.BookStore.Blazor
                                 Field="@nameof(BookDto.Type)"
                                 Caption="@L["Type"]">
                     <DisplayTemplate>
-                        @L[$"Enum:BookType:{(int) context.Type}"]
+                        @L[$"Enum:BookType.{Enum.GetName(context.Type)}"]
                     </DisplayTemplate>
                 </DataGridColumn>
                 <DataGridColumn TItem="BookDto"
@@ -1513,7 +1512,7 @@ namespace Acme.BookStore.Blazor
                             @foreach (int bookTypeValue in Enum.GetValues(typeof(BookType)))
                             {
                                 <SelectItem TValue="BookType" Value="@((BookType) bookTypeValue)">
-                                    @L[$"Enum:BookType:{bookTypeValue}"]
+                                    @L[$"Enum:BookType.{Enum.GetName((BookType)bookTypeValue)}"]
                                 </SelectItem>
                             }
                         </Select>
@@ -1566,7 +1565,7 @@ namespace Acme.BookStore.Blazor
                             @foreach (int bookTypeValue in Enum.GetValues(typeof(BookType)))
                             {
                                 <SelectItem TValue="BookType" Value="@((BookType) bookTypeValue)">
-                                    @L[$"Enum:BookType:{bookTypeValue}"]
+                                    @L[$"Enum:BookType.{Enum.GetName((BookType)bookTypeValue)}"]
                                 </SelectItem>
                             }
                         </Select>

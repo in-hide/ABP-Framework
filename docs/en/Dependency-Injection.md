@@ -49,7 +49,7 @@ public class BlogModule : AbpModule
 }
 ````
 
-The section below explains the conventions and configurations.
+The sections below explain the conventions and configurations.
 
 ### Inherently Registered Types
 
@@ -131,7 +131,7 @@ public class TaxCalculator: ICalculator, ITaxCalculator, ICanCalculate, ITransie
 If you do not specify which services to expose, ABP expose services by convention. So taking the ``TaxCalculator`` defined above:
 
 * The class itself is exposed by default. That means you can inject it by ``TaxCalculator`` class.
-* Default interfaces are exposed by default. Default interfaces are determined by naming convention. In this example, ``ICalculator`` and ``ITaxCalculator`` are default interfaces of ``TaxCalculator``, but ``ICanCalculate`` is not.
+* Default interfaces are exposed by default. Default interfaces are determined by naming convention. In this example, ``ICalculator`` and ``ITaxCalculator`` are default interfaces of ``TaxCalculator``, but ``ICanCalculate`` is not. A generic interface (e.g. `ICalculator<string>`) is also considered as a default interface if the naming convention is satisfied.
 
 ### Combining All Together
 
@@ -244,6 +244,27 @@ One restriction of property injection is that you cannot use the dependency in y
 
 Property injection is also useful when you want to design a base class that has some common services injected by default. If you're going to use constructor injection, all derived classes should also inject depended services into their own constructors which makes development harder. However, be very careful using property injection for non-optional services as it makes it harder to clearly see the requirements of a class.
 
+#### DisablePropertyInjectionAttribute
+
+You can use `[DisablePropertyInjection]` attribute on class or properties to disable property injection for the whole class or some specific properties.
+
+````C#
+[DisablePropertyInjection]
+public class MyService : ITransientDependency
+{
+    public ITaxCalculator TaxCalculator { get; set; }
+}
+
+public class MyService : ITransientDependency
+{
+    public ILogger<MyService> Logger { get; set; }
+
+    [DisablePropertyInjection]
+    public ITaxCalculator TaxCalculator { get; set; }
+}
+
+````
+
 ### Resolve Service from IServiceProvider
 
 You may want to resolve a service directly from ``IServiceProvider``. In that case, you can inject IServiceProvider into your class and use ``GetService`` method as shown below:
@@ -251,19 +272,104 @@ You may want to resolve a service directly from ``IServiceProvider``. In that ca
 ````C#
 public class MyService : ITransientDependency
 {
-    private readonly IServiceProvider _serviceProvider;
+    public ILogger<MyService> Logger { get; set; }
+}
+````
 
-    public MyService(IServiceProvider serviceProvider)
-    {
-        _serviceProvider = serviceProvider;
-    }
+### Dealing with multiple implementations
 
-    public void DoSomething()
+You can register multiple implementations of the same service interface. Assume that you have an `IExternalLogger` interface with two implementations:
+
+````csharp
+public interface IExternalLogger
+{
+    Task LogAsync(string logText);
+}
+
+public class ElasticsearchExternalLogger : IExternalLogger
+{
+    public async Task LogAsync(string logText)
     {
-        var taxCalculator = _serviceProvider.GetService<ITaxCalculator>();
-        //...
+        //TODO...
     }
 }
+
+public class AzureExternalLogger : IExternalLogger
+{
+    public Task LogAsync(string logText)
+    {
+        throw new System.NotImplementedException();
+    }
+}
+````
+
+In this example, we haven't registered any of the implementation classes to the dependency injection system yet. So, if we try to inject the `IExternalLogger` interface, we get an error indicating that no implementation found.
+
+If we register both of the `ElasticsearchExternalLogger` and `AzureExternalLogger` services for the `IExternalLogger` interface, and then try to inject the `IExternalLogger` interface, then the last registered implementation will be used.
+
+An example service injecting the `IExternalLogger` interface:
+
+````csharp
+public class MyService : ITransientDependency
+{
+    private readonly IExternalLogger _externalLogger;
+
+    public MyService(IExternalLogger externalLogger)
+    {
+        _externalLogger = externalLogger;
+    }
+
+    public async Task DemoAsync()
+    {
+        await _externalLogger.LogAsync("Example log message...");
+    }
+}
+````
+
+Here, as said before, we get the last registered implementation. However, how to determine the last registered implementation?
+
+If we implement one of the dependency interfaces (e.g. `ITransientDependency`), then the registration order will be uncertain (it may depend on the namespaces of the classes). The *last registered implementation* can be different than you expect. So, it is not suggested to use the dependency interfaces to register multiple implementations.
+
+You can register your services in the `ConfigureServices` method of your module:
+
+````csharp
+public override void ConfigureServices(ServiceConfigurationContext context)
+{
+    context.Services.AddTransient<IExternalLogger, ElasticsearchExternalLogger>();
+    context.Services.AddTransient<IExternalLogger, AzureExternalLogger>();
+}
+````
+
+In this case, you get an `AzureExternalLogger` instance when you inject the `IExternalLogger` interface, because the last registered implementation is the `AzureExternalLogger` class.
+
+When you have multiple implementation of an interface, you may want to work with all these implementations. Assume that you want to write log to all the external loggers. We can change the `MyService` implementation as the following:
+
+````csharp
+public class MyService : ITransientDependency
+{
+    private readonly IEnumerable<IExternalLogger> _externalLoggers;
+
+    public MyService(IEnumerable<IExternalLogger> externalLoggers)
+    {
+        _externalLoggers = externalLoggers;
+    }
+
+    public async Task DemoAsync()
+    {
+        foreach (var externalLogger in _externalLoggers)
+        {
+            await externalLogger.LogAsync("Example log message...");
+        }
+    }
+}
+````
+
+In this example, we are injecting `IEnumerable<IExternalLogger>` instead of `IExternalLogger`, so we have a collection of the `IExternalLogger` implementations. Then we are using a `foreach` loop to write the same log text to all the `IExternalLogger` implementations.
+
+If you are using `IServiceProvider` to resolve dependencies, then use its `GetServices` method to obtain a collection of the service implementations:
+
+````csharp
+IEnumerable<IExternalLogger> services = _serviceProvider.GetServices<IExternalLogger>();
 ````
 
 ### Releasing/Disposing Services

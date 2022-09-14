@@ -1,18 +1,14 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Linq;
 using Microsoft.Extensions.Localization;
 using Shouldly;
-using Volo.Abp.Localization.TestResources.Base.CountryNames;
-using Volo.Abp.Localization.TestResources.Base.Validation;
 using Volo.Abp.Localization.TestResources.Source;
-using Volo.Abp.Modularity;
 using Volo.Abp.Testing;
-using Volo.Abp.VirtualFileSystem;
 using Xunit;
 
 namespace Volo.Abp.Localization;
 
-public class AbpLocalization_Tests : AbpIntegratedTest<AbpLocalization_Tests.TestModule>
+public class AbpLocalization_Tests : AbpIntegratedTest<AbpLocalizationTestModule>
 {
     private readonly IStringLocalizer<LocalizationTestResource> _localizer;
     private readonly IStringLocalizerFactory _localizerFactory;
@@ -76,7 +72,6 @@ public class AbpLocalization_Tests : AbpIntegratedTest<AbpLocalization_Tests.Tes
         {
             _localizer["Car"].Value.ShouldBe("Auto");
         }
-
     }
 
     [Fact]
@@ -106,7 +101,6 @@ public class AbpLocalization_Tests : AbpIntegratedTest<AbpLocalization_Tests.Tes
         {
             _localizer["SeeYou"].Value.ShouldBe("Bis bald");
         }
-
     }
 
     [Fact]
@@ -132,7 +126,6 @@ public class AbpLocalization_Tests : AbpIntegratedTest<AbpLocalization_Tests.Tes
 
             _localizer.GetAllStrings().ShouldContain(ls => ls.Name == "USA");
         }
-
     }
 
     [Fact]
@@ -183,6 +176,60 @@ public class AbpLocalization_Tests : AbpIntegratedTest<AbpLocalization_Tests.Tes
         {
             _localizer["CarPlural"].Value.ShouldBe("Autos");
         }
+
+        using (CultureHelper.Use(CultureInfo.GetCultureInfo("zh-Hans")))
+        {
+            _localizer["Car"].Value.ShouldBe("汽车");
+        }
+        using (CultureHelper.Use(CultureInfo.GetCultureInfo("zh-Hans")))
+        {
+            _localizer["CarPlural"].Value.ShouldBe("汽车");
+        }
+
+        using (CultureHelper.Use(CultureInfo.GetCultureInfo("zh-CN")))
+        {
+            _localizer["Car"].Value.ShouldBe("汽车");
+        }
+        using (CultureHelper.Use(CultureInfo.GetCultureInfo("zh-CN")))
+        {
+            _localizer["CarPlural"].Value.ShouldBe("汽车");
+        }
+        
+        using (CultureHelper.Use(CultureInfo.GetCultureInfo("zh-Hans-CN")))
+        {
+            _localizer["Car"].Value.ShouldBe("汽车");
+        }
+        using (CultureHelper.Use(CultureInfo.GetCultureInfo("zh-Hans-CN")))
+        {
+            _localizer["CarPlural"].Value.ShouldBe("汽车");
+        }
+
+        using (CultureHelper.Use(CultureInfo.GetCultureInfo("zh-Hant")))
+        {
+            _localizer["Car"].Value.ShouldBe("汽車");
+        }
+        using (CultureHelper.Use(CultureInfo.GetCultureInfo("zh-Hant")))
+        {
+            _localizer["CarPlural"].Value.ShouldBe("汽車");
+        }
+        
+        using (CultureHelper.Use(CultureInfo.GetCultureInfo("zh-TW")))
+        {
+            _localizer["Car"].Value.ShouldBe("汽車");
+        }
+        using (CultureHelper.Use(CultureInfo.GetCultureInfo("zh-TW")))
+        {
+            _localizer["CarPlural"].Value.ShouldBe("汽車");
+        }
+        
+        using (CultureHelper.Use(CultureInfo.GetCultureInfo("zh-Hant-TW")))
+        {
+            _localizer["Car"].Value.ShouldBe("汽車");
+        }
+        using (CultureHelper.Use(CultureInfo.GetCultureInfo("zh-Hant-TW")))
+        {
+            _localizer["CarPlural"].Value.ShouldBe("汽車");
+        }
     }
 
     [Fact]
@@ -221,7 +268,6 @@ public class AbpLocalization_Tests : AbpIntegratedTest<AbpLocalization_Tests.Tes
                       ls.ResourceNotFound == false
             );
         }
-
     }
 
     [Fact]
@@ -256,7 +302,6 @@ public class AbpLocalization_Tests : AbpIntegratedTest<AbpLocalization_Tests.Tes
                       ls.ResourceNotFound == false
             );
         }
-
     }
 
     [Fact]
@@ -312,38 +357,6 @@ public class AbpLocalization_Tests : AbpIntegratedTest<AbpLocalization_Tests.Tes
                       ls.Value == "See you" &&
                       ls.ResourceNotFound == false
             );
-        }
-    }
-
-    [DependsOn(typeof(AbpTestBaseModule))]
-    [DependsOn(typeof(AbpLocalizationModule))]
-    public class TestModule : AbpModule
-    {
-        public override void ConfigureServices(ServiceConfigurationContext context)
-        {
-            Configure<AbpVirtualFileSystemOptions>(options =>
-            {
-                options.FileSets.AddEmbedded<TestModule>();
-            });
-
-            Configure<AbpLocalizationOptions>(options =>
-            {
-                options.Resources
-                    .Add<LocalizationTestValidationResource>("en")
-                    .AddVirtualJson("/Volo/Abp/Localization/TestResources/Base/Validation");
-
-                options.Resources
-                    .Add<LocalizationTestCountryNamesResource>("en")
-                    .AddVirtualJson("/Volo/Abp/Localization/TestResources/Base/CountryNames");
-
-                options.Resources
-                    .Add<LocalizationTestResource>("en")
-                    .AddVirtualJson("/Volo/Abp/Localization/TestResources/Source");
-
-                options.Resources
-                    .Get<LocalizationTestResource>()
-                    .AddVirtualJson("/Volo/Abp/Localization/TestResources/SourceExt");
-            });
         }
     }
 }
