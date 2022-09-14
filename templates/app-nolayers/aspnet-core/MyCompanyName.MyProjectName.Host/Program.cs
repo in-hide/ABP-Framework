@@ -1,3 +1,4 @@
+using System;
 using MyCompanyName.MyProjectName.Data;
 using Serilog;
 using Serilog.Events;
@@ -8,6 +9,11 @@ public class Program
 {
     public async static Task<int> Main(string[] args)
     {
+//<TEMPLATE-REMOVE IF-NOT='dbms:PostgreSQL'>
+        // https://www.npgsql.org/efcore/release-notes/6.0.html#opting-out-of-the-new-timestamp-mapping-logic
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+//</TEMPLATE-REMOVE>
         var loggerConfiguration = new LoggerConfiguration()
 #if DEBUG
             .MinimumLevel.Debug()
@@ -17,12 +23,9 @@ public class Program
             .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
             .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
             .Enrich.FromLogContext()
-#if DEBUG
             .WriteTo.Async(c => c.File("Logs/logs.txt"))
             .WriteTo.Async(c => c.Console());
-#else
-            .WriteTo.Async(c => c.File("Logs/logs.txt"));
-#endif
+
         if (IsMigrateDatabase(args))
         {
             loggerConfiguration.MinimumLevel.Override("Volo.Abp", LogEventLevel.Warning);

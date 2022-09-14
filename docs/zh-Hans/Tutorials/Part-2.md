@@ -16,7 +16,7 @@
 本教程分为以下部分:
 
 - [Part 1: 创建服务端](Part-1.md)
-- **Part 2: 图书列表页面**(本章)
+- **Part 2: 图书列表页面 (本章)**
 - [Part 3: 创建,更新和删除图书](Part-3.md)
 - [Part 4: 集成测试](Part-4.md)
 - [Part 5: 授权](Part-5.md)
@@ -514,7 +514,7 @@ export class BookComponent implements OnInit {
           {%{{{ '::Menu:Books' | abpLocalization }}}%}
         </h5>
       </div>
-      <div class="text-right col col-md-6"></div>
+      <div class="text-end col col-md-6"></div>
     </div>
   </div>
   <div class="card-body">

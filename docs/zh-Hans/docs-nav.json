@@ -263,6 +263,10 @@
           "path": "Data-Seeding.md"
         },
         {
+          "text": "分布式锁",
+          "path": "Distributed-Locking.md"
+        },
+        {
           "text": "虚拟文件系统",
           "path": "Virtual-File-System.md"
         },
@@ -472,6 +476,10 @@
               "path": "API/Application-Configuration.md"
             }
           ]
+        },
+        {
+          "text": "API版本控制",
+          "path": "API/API-Versioning.md"
         }
       ]
     },
@@ -512,6 +520,10 @@
               "path": "UI/AspNetCore/Customization-User-Interface.md"
             },
             {
+              "text": "测试",
+              "path": "UI/AspNetCore/Testing.md"
+            },
+            {
               "text": "主题化",
               "path": "UI/AspNetCore/Theming.md"
             }
@@ -531,6 +543,10 @@
             {
               "text": "服务代理",
               "path": "UI/Angular/Service-Proxies.md"
+            },
+            {
+              "text": "单元测试",
+              "path": "UI/Angular/Testing.md"
             },
             {
               "text": "HTTP请求",
@@ -679,6 +695,20 @@
       ]
     },
     {
+      "text": "测试",
+      "path": "Testing.md"
+    },
+    {
+      "text": "部署",
+      "path": "Deployment/Index.md",
+      "items": [
+        {
+          "text": "部署到群集环境",
+          "path": "Deployment/Clustered-Environment.md"
+        }
+      ]
+    },
+    {
       "text": "示例",
       "items": [
         {
@@ -711,14 +741,6 @@
           "path": "Modules/Background-Jobs.md"
         },
         {
-          "text": "博客",
-          "path": "Modules/Blogging.md"
-        },
-        {
-          "text": "客户端模拟",
-          "path": "Modules/Client-Simulation.md"
-        },
-        {
           "text": "CMS Kit",
           "path": "Modules/Cms-Kit/Index.md"
         },
@@ -749,10 +771,6 @@
         {
           "text": "租户管理",
           "path": "Modules/Tenant-Management.md"
-        },
-        {
-          "text": "用户",
-          "path": "Modules/Users.md"
         },
         {
           "text": "虚拟文件浏览器",
